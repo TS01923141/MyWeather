@@ -25,7 +25,6 @@ import com.example.lancer.myweather.Presentation.Presenterful;
 
 import io.realm.Realm;
 import io.realm.RealmList;
-import io.realm.RealmResults;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -47,6 +46,45 @@ public class MainActivity extends AppCompatActivity {
     private List list;private Temp temp;private Weather weather;
     private RealmList<List> realmList;private RealmList<Weather> weatherList;
     private Presenter presenter;
+/*
+    public void fetchData(final String weatherLocation) {
+
+
+        MyRetrofit.MyDataService myDataService;
+        myDataService = MyRetrofit.getmInstance().getAPI();
+        Call<JSON_Data> call = myDataService.getData(""+weatherLocation,KEY_API,"metric","3");
+        call.enqueue(new Callback<JSON_Data>() {
+            @Override
+            public void onResponse(Call<JSON_Data> call, final Response<JSON_Data> response) {
+                Log.i("connect","Success");
+
+
+
+                realm.executeTransaction(new Realm.Transaction() {
+                    @Override
+                    public void execute(Realm realm) {
+                        if(checkIfDataExists()) {
+                            updateData(response);
+                        } else {
+                            initDataObject(weatherLocation);
+                            presenter.setData(json_data);
+                            presenter.setResponse(response);
+                            presenter.setRealmObjectData();
+                        }
+                    }
+                });
+
+
+
+            }
+
+            @Override
+            public void onFailure(Call<JSON_Data> call, Throwable t) {
+                Log.i("connect","fail:"+ String.valueOf(t));
+            }
+        });
+    }
+*/
 
     /**
      * The {@link ViewPager} that will host the section contents.
@@ -81,19 +119,15 @@ public class MainActivity extends AppCompatActivity {
 
         initPresenter();
 
+        //fetchData(location1);
+
         MyRetrofit.MyDataService myDataService;
         myDataService = MyRetrofit.getmInstance().getAPI();
-        Call<JSON_Data> call = myDataService.getData(""+"Taipei",KEY_API,"metric","3");
+        Call<JSON_Data> call = myDataService.getData(""+location1,KEY_API,"metric","3");
         call.enqueue(new Callback<JSON_Data>() {
             @Override
             public void onResponse(Call<JSON_Data> call, final Response<JSON_Data> response) {
                 Log.i("connect","Success");
-                //json_data = response.body();
-                /*if (response.body().getCity().getName()==null) {
-                    Log.i("JsonData", "null");
-                }else{
-                    Log.i("JsonData", response.body().getCity().getName());
-                }*/
 
 
                 realm.executeTransaction(new Realm.Transaction() {
@@ -103,26 +137,19 @@ public class MainActivity extends AppCompatActivity {
                             updateData(response);
                         } else {
                             initDataObject();
+                            Log.i("responseJsonData", String.valueOf(json_data.getList()));
                             presenter.setData(json_data);
                             presenter.setResponse(response);
                             presenter.setRealmObjectData();
                         }
                     }
                 });
-
-                //presenter.getRealmData();
-
-
-
             }
-
             @Override
             public void onFailure(Call<JSON_Data> call, Throwable t) {
                 Log.i("connect","fail:"+ String.valueOf(t));
             }
         });
-
-
     }
 
 
@@ -181,12 +208,13 @@ public class MainActivity extends AppCompatActivity {
                 View rootView = inflater.inflate(R.layout.fragment_main, container, false);
                 TextView textView = (TextView) rootView.findViewById(R.id.section_label);
                 textView.setText(location1);
-
-
-                TextView weather = (TextView) rootView.findViewById(R.id.weather);
-                RealmResults<JSON_Data> data = realm.where(JSON_Data.class).findAll();
-                weather.setText(data.get(0).getList().get(0).getWeather().get(0).getMain());
+/*
                 Log.i("tttttt", String.valueOf(realm.where(JSON_Data.class).findAll()));
+                TextView weather = (TextView) rootView.findViewById(R.id.weather);
+                //RealmResults<JSON_Data> data = realm.where(JSON_Data.class).equalTo("location",location1).findAll();
+                RealmResults<JSON_Data> data = realm.where(JSON_Data.class).equalTo("location",location1).findAll();
+                //weather.setText(data.get(0).getList().get(0).getWeather().get(0).getMain());
+*/
                 //weather.setText(data.getList().get(0).getWeather().get(0).getMain());
                 //weather.setText(data.get(0).getList().get(0).getWeather().get(0).getMain());
                 /*TextView weather = (TextView) rootView.findViewById(R.id.weather);
@@ -261,9 +289,9 @@ public class MainActivity extends AppCompatActivity {
         weather = realm.createObject(Weather.class);
         realmList=new RealmList<List>(list);
         weatherList = new RealmList<Weather>(weather);
-        json_data.setList(realmList);
         int i;
         for (i=0;i<json_data.getList().size();i++) {
+            json_data.setList(json_data.getList());
             json_data.getList().get(i).setTemp(temp);
             json_data.getList().get(i).setWeather(weatherList);
         }

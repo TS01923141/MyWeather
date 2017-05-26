@@ -39,8 +39,8 @@ public class Presenterful implements Presenter{
     public void setRealmObjectData() {
 
         Log.i("answer", String.valueOf(response.body().getList().get(0).getTemp().getDay()));
-        Log.i("answer222", String.valueOf(response.body().getList()));
-        Log.i("answer333", String.valueOf(data.getList()));
+        Log.i("answerResonse.body", String.valueOf(response.body().getList()));
+        Log.i("answerData", String.valueOf(data.getList()));
         data.getList().get(0).getTemp().setDay(response.body().getList().get(0).getTemp().getDay());
         data.getList().get(0).getTemp().setMax(response.body().getList().get(0).getTemp().getMax());
         data.getList().get(0).getTemp().setMin(response.body().getList().get(0).getTemp().getMin());
@@ -50,7 +50,8 @@ public class Presenterful implements Presenter{
         data.getList().get(0).getWeather().get(0).setMain(response.body().getList().get(0).getWeather().get(0).getMain());
         data.getList().get(0).getWeather().get(0).setId(response.body().getList().get(0).getWeather().get(0).getId());
 
-        /*int i;
+/*
+        int i;
         for (i=0;i<response.body().getList().size();i++){
             Log.i("answer", String.valueOf(response.body().getList().get(i).getTemp().getDay()));
             Log.i("answer222", String.valueOf(response.body().getList()));
@@ -63,17 +64,8 @@ public class Presenterful implements Presenter{
             data.getList().get(i).getWeather().get(0).setIcon(response.body().getList().get(i).getWeather().get(0).getIcon());
             data.getList().get(i).getWeather().get(0).setMain(response.body().getList().get(i).getWeather().get(0).getMain());
             data.getList().get(i).getWeather().get(0).setId(response.body().getList().get(i).getWeather().get(0).getId());
-        }*/
-        /*data.getMain().setTemp(response.body().getMain().getTemp());
-        data.getMain().setHumidity(response.body().getMain().getHumidity());
-        data.getMain().setPressure(response.body().getMain().getPressure());
-
-        data.getCoord().setLat(response.body().getCoord().getLat());
-        data.getCoord().setLon(response.body().getCoord().getLon());
-
-        data.getWind().setSpeed(response.body().getWind().getSpeed());
-        data.getWind().setDeg(response.body().getWind().getDeg());
-        data.getWind().setDirection();*/
+        }
+*/
     }
 
     @Override

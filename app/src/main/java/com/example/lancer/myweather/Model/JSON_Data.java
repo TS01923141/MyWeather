@@ -2,6 +2,7 @@ package com.example.lancer.myweather.Model;
 
 import io.realm.RealmList;
 import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
 /**
  * Created by Lancer on 2017/5/24.
@@ -17,12 +18,12 @@ public class JSON_Data extends RealmObject{
         this.list = list;
     }
 
-    /*@PrimaryKey
+    @PrimaryKey
     private String location;
     public String getLocation(){
         return location;
     }
     public void setLocation(String location){
         this.location=location;
-    }*/
+    }
 }
