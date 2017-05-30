@@ -25,6 +25,7 @@ import com.example.lancer.myweather.Presentation.Presenterful;
 
 import io.realm.Realm;
 import io.realm.RealmList;
+import io.realm.RealmResults;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -46,9 +47,8 @@ public class MainActivity extends AppCompatActivity {
     private List list;private Temp temp;private Weather weather;
     private RealmList<List> realmList;private RealmList<Weather> weatherList;
     private Presenter presenter;
-/*
-    public void fetchData(final String weatherLocation) {
 
+    public void fetchData(final String weatherLocation) {
 
         MyRetrofit.MyDataService myDataService;
         myDataService = MyRetrofit.getmInstance().getAPI();
@@ -57,34 +57,32 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<JSON_Data> call, final Response<JSON_Data> response) {
                 Log.i("connect","Success");
-
-
-
+                Log.i("RetrofitResponse1", String.valueOf(response.body().getList().get(0).getTemp()));
+                Log.i("RetrofitResponse2", String.valueOf(response.body().getList().get(1).getTemp()));
+                Log.i("RetrofitResponse3", String.valueOf(response.body().getList().get(2).getTemp()));
                 realm.executeTransaction(new Realm.Transaction() {
                     @Override
                     public void execute(Realm realm) {
-                        if(checkIfDataExists()) {
+                        if(checkIfDataExists(weatherLocation)) {
                             updateData(response);
+                            Log.i("updatDate", String.valueOf(response));
                         } else {
                             initDataObject(weatherLocation);
+                            Log.i("RetrofitJsonData", String.valueOf(json_data));
                             presenter.setData(json_data);
                             presenter.setResponse(response);
                             presenter.setRealmObjectData();
                         }
                     }
                 });
-
-
-
             }
-
             @Override
             public void onFailure(Call<JSON_Data> call, Throwable t) {
                 Log.i("connect","fail:"+ String.valueOf(t));
             }
         });
     }
-*/
+
 
     /**
      * The {@link ViewPager} that will host the section contents.
@@ -111,45 +109,27 @@ public class MainActivity extends AppCompatActivity {
 
         Realm.init(this);
         realm = Realm.getDefaultInstance();
+
+        Log.i("onCreate","onCreate");
+        /*if(!realm.isEmpty()){
+            Log.i("RealmIs","Null");
+            initPresenter();
+            fetchData(location1);
+            fetchData(location2);
+            fetchData(location3);
+            Log.i("CreateFetach", String.valueOf(realm.where(JSON_Data.class).findFirst()));
+        }*/
     }
 
     @Override
     protected void onStart(){
         super.onStart();
-
+        Log.i("onStart","onStart");
         initPresenter();
 
-        //fetchData(location1);
-
-        MyRetrofit.MyDataService myDataService;
-        myDataService = MyRetrofit.getmInstance().getAPI();
-        Call<JSON_Data> call = myDataService.getData(""+location1,KEY_API,"metric","3");
-        call.enqueue(new Callback<JSON_Data>() {
-            @Override
-            public void onResponse(Call<JSON_Data> call, final Response<JSON_Data> response) {
-                Log.i("connect","Success");
-
-
-                realm.executeTransaction(new Realm.Transaction() {
-                    @Override
-                    public void execute(Realm realm) {
-                        if(checkIfDataExists()) {
-                            updateData(response);
-                        } else {
-                            initDataObject();
-                            Log.i("responseJsonData", String.valueOf(json_data.getList()));
-                            presenter.setData(json_data);
-                            presenter.setResponse(response);
-                            presenter.setRealmObjectData();
-                        }
-                    }
-                });
-            }
-            @Override
-            public void onFailure(Call<JSON_Data> call, Throwable t) {
-                Log.i("connect","fail:"+ String.valueOf(t));
-            }
-        });
+        fetchData(location1);
+        fetchData(location2);
+        fetchData(location3);
     }
 
 
@@ -203,31 +183,12 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-
+            Log.i("Fragment","onCreateView");
             if(getArguments().getInt(ARG_SECTION_NUMBER)==1) {
                 View rootView = inflater.inflate(R.layout.fragment_main, container, false);
                 TextView textView = (TextView) rootView.findViewById(R.id.section_label);
                 textView.setText(location1);
-/*
-                Log.i("tttttt", String.valueOf(realm.where(JSON_Data.class).findAll()));
-                TextView weather = (TextView) rootView.findViewById(R.id.weather);
-                //RealmResults<JSON_Data> data = realm.where(JSON_Data.class).equalTo("location",location1).findAll();
-                RealmResults<JSON_Data> data = realm.where(JSON_Data.class).equalTo("location",location1).findAll();
-                //weather.setText(data.get(0).getList().get(0).getWeather().get(0).getMain());
-*/
-                //weather.setText(data.getList().get(0).getWeather().get(0).getMain());
-                //weather.setText(data.get(0).getList().get(0).getWeather().get(0).getMain());
-                /*TextView weather = (TextView) rootView.findViewById(R.id.weather);
-                textView.setText(json_data.getList()[0].getWeather()[0].getMain());
-                TextView now = (TextView) rootView.findViewById(R.id.now);
-                textView.setText((int) json_data.getList()[0].getTemp().getDay());
-                TextView max = (TextView) rootView.findViewById(R.id.max);
-                textView.setText((int) json_data.getList()[0].getTemp().getMax());
-                TextView min = (TextView) rootView.findViewById(R.id.min);
-                textView.setText((int) json_data.getList()[0].getTemp().getMin());*/
-
-
-
+                View subView = inflater.inflate(R.layout.recent_weather, container, false);
                 return rootView;
             }else if(getArguments().getInt(ARG_SECTION_NUMBER)==2){
                 View rootView = inflater.inflate(R.layout.fragment_main, container, false);
@@ -242,7 +203,54 @@ public class MainActivity extends AppCompatActivity {
                 return rootView;
             }
         }
+        private void setView(RealmResults<JSON_Data> data){
+            TextView weather = (TextView) getView().findViewById(R.id.weather);
+            weather.setText(getString(R.string.weather)+ data.get(0).getList().get(0).getWeather().get(0).getMain());
+            TextView day = (TextView) getView().findViewById(R.id.day);
+            day.setText(getString(R.string.Day)+String.valueOf(data.get(0).getList().get(0).getTemp().getDay())+getString(R.string.degree));
+            TextView max = (TextView) getView().findViewById(R.id.max);
+            max.setText(getString(R.string.Max)+String.valueOf(data.get(0).getList().get(0).getTemp().getMax())+getString(R.string.degree));
+            TextView min = (TextView) getView().findViewById(R.id.min);
+            min.setText(getString(R.string.Min)+String.valueOf(data.get(0).getList().get(0).getTemp().getMin())+getString(R.string.degree));
+
+
+            TextView subMax1 = (TextView) getView().findViewById(R.id.textView4);
+            subMax1.setText(getString(R.string.Max)+String.valueOf(data.get(0).getList().get(1).getTemp().getMax())+getString(R.string.degree));
+            TextView subMin1 = (TextView) getView().findViewById(R.id.textView5);
+            subMin1.setText(getString(R.string.Min)+String.valueOf(data.get(0).getList().get(1).getTemp().getMin())+getString(R.string.degree));
+
+            TextView subMax2 = (TextView) getView().findViewById(R.id.textView6);
+            subMax2.setText(getString(R.string.Max)+String.valueOf(data.get(0).getList().get(2).getTemp().getMax())+getString(R.string.degree));
+            TextView subMin2 = (TextView) getView().findViewById(R.id.textView7);
+            subMin2.setText(getString(R.string.Min)+String.valueOf(data.get(0).getList().get(2).getTemp().getMin())+getString(R.string.degree));
+        }
+        @Override
+        public void onStart() {
+            super.onStart();
+            Log.i("Fragment","onStart");
+            if(getArguments().getInt(ARG_SECTION_NUMBER)==1) {
+                Log.i("tttttt", String.valueOf(realm.where(JSON_Data.class).findAll()));
+                RealmResults<JSON_Data> data = realm.where(JSON_Data.class).equalTo("location",location1).findAll();
+                Log.i("dataaaaaa", String.valueOf(data));
+                if (realm.where(JSON_Data.class).equalTo("location", location1).findFirst() != null) {
+                    setView(data);
+                }
+            }else if(getArguments().getInt(ARG_SECTION_NUMBER)==2){
+                RealmResults<JSON_Data> data = realm.where(JSON_Data.class).equalTo("location",location2).findAll();
+                if (realm.where(JSON_Data.class).equalTo("location", location2).findFirst() != null) {
+                    setView(data);
+                }
+            }else{
+                RealmResults<JSON_Data> data = realm.where(JSON_Data.class).equalTo("location",location3).findAll();
+                if (realm.where(JSON_Data.class).equalTo("location", location3).findFirst() != null) {
+                    setView(data);
+                }
+            }
+        }
     }
+
+
+
 
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
@@ -281,29 +289,55 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //新增資料庫檔案
-    private void initDataObject(){
-        json_data = realm.createObject(JSON_Data.class,location1);
-        list = realm.createObject(List.class);
+    //初始化資料庫
+    private void initDataObject(String weatherLocation){
+        json_data = realm.createObject(JSON_Data.class,weatherLocation);
+        realmList=new RealmList<List>();
+        /*
+        //list = realm.createObject(List.class);
         temp = realm.createObject(Temp.class);
         weather = realm.createObject(Weather.class);
-        realmList=new RealmList<List>(list);
         weatherList = new RealmList<Weather>(weather);
+        realmList=new RealmList<List>();
+
+        int j;
+        for (j=0;j<2;j++) {
+            realmList.add(j,list);
+        }
+
+
+        Log.i("realm.size", String.valueOf(realmList.size()));
+        json_data.setList(realmList);
+        Log.i("json_data.List", String.valueOf(json_data.getList()));
+        Log.i("json_data.Size", String.valueOf(json_data.getList().size()));
         int i;
-        for (i=0;i<json_data.getList().size();i++) {
-            json_data.setList(json_data.getList());
+        for (i=0;i<3;i++) {
             json_data.getList().get(i).setTemp(temp);
             json_data.getList().get(i).setWeather(weatherList);
         }
+        */
+        int j;
+        for (j=0;j<3;j++) {
+            temp = realm.createObject(Temp.class);
+            weather = realm.createObject(Weather.class);
+            weatherList = new RealmList<Weather>(weather);
+            list = realm.createObject(List.class);
+            realmList.add(j,list);
+            realmList.get(j).setTemp(temp);
+            realmList.get(j).setWeather(weatherList);
+        }
+        json_data.setList(realmList);
+        Log.i("json_data.List2", String.valueOf(json_data.getList()));
         Log.i("json_data", String.valueOf(json_data));
         Log.i("realmList", String.valueOf(realmList));
         Log.i("list", String.valueOf(list));
         Log.i("temp", String.valueOf(temp));
         Log.i("weather", String.valueOf(weather));
+        Log.i("temp.day", String.valueOf(temp.getDay()));
     }
 
-    private boolean checkIfDataExists() {
-        return realm.where(JSON_Data.class).equalTo("location", location1).findFirst() != null;
+    private boolean checkIfDataExists(String weatherLocation) {
+        return realm.where(JSON_Data.class).equalTo("location", weatherLocation).findFirst() != null;
     }
     //更新realm
     private void updateData(Response<JSON_Data> response) {
@@ -311,7 +345,8 @@ public class MainActivity extends AppCompatActivity {
     }
     private void initPresenter() {
         presenter = new Presenterful();
-        //presenter.setView(this);
     }
+
+
 
 }

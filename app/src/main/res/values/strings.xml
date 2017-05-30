@@ -2,4 +2,9 @@
     <string name="app_name">MyWeather</string>
     <string name="action_settings">Settings</string>
     <string name="section_format">Hello World from section: %1$d</string>
+    <string name="weather">天氣:</string>
+    <string name="Day">日均溫:</string>
+    <string name="Max">最高溫:</string>
+    <string name="Min">最低溫:</string>
+    <string name="degree">℃</string>
 </resources>
