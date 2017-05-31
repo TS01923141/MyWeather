@@ -14,8 +14,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.lancer.myweather.Model.ImageCheck;
 import com.example.lancer.myweather.Model.JSON_Data;
 import com.example.lancer.myweather.Model.List;
 import com.example.lancer.myweather.Model.Temp;
@@ -47,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private List list;private Temp temp;private Weather weather;
     private RealmList<List> realmList;private RealmList<Weather> weatherList;
     private Presenter presenter;
+
 
     public void fetchData(final String weatherLocation) {
 
@@ -159,6 +162,7 @@ public class MainActivity extends AppCompatActivity {
      * A placeholder fragment containing a simple view.
      */
     public static class PlaceholderFragment extends Fragment {
+        private ImageCheck imageCheck = new ImageCheck();
         /**
          * The fragment argument representing the section number for this
          * fragment.
@@ -212,17 +216,22 @@ public class MainActivity extends AppCompatActivity {
             max.setText(getString(R.string.Max)+String.valueOf(data.get(0).getList().get(0).getTemp().getMax())+getString(R.string.degree));
             TextView min = (TextView) getView().findViewById(R.id.min);
             min.setText(getString(R.string.Min)+String.valueOf(data.get(0).getList().get(0).getTemp().getMin())+getString(R.string.degree));
-
+            ImageView imageView = (ImageView)getView().findViewById(R.id.imageView);
+            imageView.setImageResource(imageCheck.getIconName(data.get(0).getList().get(0).getWeather().get(0).getIcon()));
 
             TextView subMax1 = (TextView) getView().findViewById(R.id.textView4);
             subMax1.setText(getString(R.string.Max)+String.valueOf(data.get(0).getList().get(1).getTemp().getMax())+getString(R.string.degree));
             TextView subMin1 = (TextView) getView().findViewById(R.id.textView5);
             subMin1.setText(getString(R.string.Min)+String.valueOf(data.get(0).getList().get(1).getTemp().getMin())+getString(R.string.degree));
+            ImageView subImageView1 = (ImageView)getView().findViewById(R.id.imageView5);
+            subImageView1.setImageResource(imageCheck.getIconName(data.get(0).getList().get(1).getWeather().get(0).getIcon()));
 
             TextView subMax2 = (TextView) getView().findViewById(R.id.textView6);
             subMax2.setText(getString(R.string.Max)+String.valueOf(data.get(0).getList().get(2).getTemp().getMax())+getString(R.string.degree));
             TextView subMin2 = (TextView) getView().findViewById(R.id.textView7);
             subMin2.setText(getString(R.string.Min)+String.valueOf(data.get(0).getList().get(2).getTemp().getMin())+getString(R.string.degree));
+            ImageView subImageView2 = (ImageView)getView().findViewById(R.id.imageView6);
+            subImageView2.setImageResource(imageCheck.getIconName(data.get(0).getList().get(2).getWeather().get(0).getIcon()));
         }
         @Override
         public void onStart() {
@@ -234,6 +243,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("dataaaaaa", String.valueOf(data));
                 if (realm.where(JSON_Data.class).equalTo("location", location1).findFirst() != null) {
                     setView(data);
+
                 }
             }else if(getArguments().getInt(ARG_SECTION_NUMBER)==2){
                 RealmResults<JSON_Data> data = realm.where(JSON_Data.class).equalTo("location",location2).findAll();
@@ -279,11 +289,11 @@ public class MainActivity extends AppCompatActivity {
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return location1;
+                    return "地區1";
                 case 1:
-                    return location2;
+                    return "地區2";
                 case 2:
-                    return location3;
+                    return "地區3";
             }
             return null;
         }
