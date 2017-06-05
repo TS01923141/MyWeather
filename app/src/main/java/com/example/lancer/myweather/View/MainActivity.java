@@ -1,4 +1,4 @@
-package com.example.lancer.myweather;
+package com.example.lancer.myweather.View;
 
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
@@ -8,7 +8,6 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,10 +19,12 @@ import android.widget.TextView;
 import com.example.lancer.myweather.Model.ImageCheck;
 import com.example.lancer.myweather.Model.JSON_Data;
 import com.example.lancer.myweather.Model.List;
+import com.example.lancer.myweather.Model.MyRetrofit;
 import com.example.lancer.myweather.Model.Temp;
 import com.example.lancer.myweather.Model.Weather;
 import com.example.lancer.myweather.Presentation.Presenter;
 import com.example.lancer.myweather.Presentation.Presenterful;
+import com.example.lancer.myweather.R;
 
 import io.realm.Realm;
 import io.realm.RealmList;
@@ -34,23 +35,17 @@ import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
     private final static String KEY_API = "0899273c10ddbaae0059f020ae69e421";
-    private JSON_Data json_data;
-    /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide
-     * fragments for each of the sections. We use a
-     * {@link FragmentPagerAdapter} derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
-     */
+    private JSON_Data json_data;private Presenter presenter;
     private SectionsPagerAdapter mSectionsPagerAdapter;
     static String location1 = "Taipei";static String location2 = "Tokyo";static String location3 = "NewYork";
     private static Realm realm;
     private List list;private Temp temp;private Weather weather;
     private RealmList<List> realmList;private RealmList<Weather> weatherList;
-    private Presenter presenter;
 
-
+//實例化retrofit連上webServer抓資料
+//透過checkIfDataExists查詢該地區是否有建立資料
+//若無，創建新資料
+//若有，更新資料
     public void fetchData(final String weatherLocation) {
 
         MyRetrofit.MyDataService myDataService;
@@ -59,19 +54,13 @@ public class MainActivity extends AppCompatActivity {
         call.enqueue(new Callback<JSON_Data>() {
             @Override
             public void onResponse(Call<JSON_Data> call, final Response<JSON_Data> response) {
-                Log.i("connect","Success");
-                Log.i("RetrofitResponse1", String.valueOf(response.body().getList().get(0).getTemp()));
-                Log.i("RetrofitResponse2", String.valueOf(response.body().getList().get(1).getTemp()));
-                Log.i("RetrofitResponse3", String.valueOf(response.body().getList().get(2).getTemp()));
                 realm.executeTransaction(new Realm.Transaction() {
                     @Override
                     public void execute(Realm realm) {
                         if(checkIfDataExists(weatherLocation)) {
-                            updateData(response);
-                            Log.i("updatDate", String.valueOf(response));
+                            updateData(response,weatherLocation);
                         } else {
                             initDataObject(weatherLocation);
-                            Log.i("RetrofitJsonData", String.valueOf(json_data));
                             presenter.setData(json_data);
                             presenter.setResponse(response);
                             presenter.setRealmObjectData();
@@ -81,15 +70,10 @@ public class MainActivity extends AppCompatActivity {
             }
             @Override
             public void onFailure(Call<JSON_Data> call, Throwable t) {
-                Log.i("connect","fail:"+ String.valueOf(t));
             }
         });
     }
 
-
-    /**
-     * The {@link ViewPager} that will host the section contents.
-     */
     private ViewPager mViewPager;
 
     @Override
@@ -99,42 +83,34 @@ public class MainActivity extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
-
+        //初始化並取得Realm實例
         Realm.init(this);
         realm = Realm.getDefaultInstance();
 
-        Log.i("onCreate","onCreate");
-        /*if(!realm.isEmpty()){
-            Log.i("RealmIs","Null");
-            initPresenter();
-            fetchData(location1);
-            fetchData(location2);
-            fetchData(location3);
-            Log.i("CreateFetach", String.valueOf(realm.where(JSON_Data.class).findFirst()));
-        }*/
     }
 
     @Override
     protected void onStart(){
         super.onStart();
-        Log.i("onStart","onStart");
+        //實例化Presenter並開始抓取資料
         initPresenter();
-
         fetchData(location1);
         fetchData(location2);
         fetchData(location3);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        realm.close();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -148,34 +124,19 @@ public class MainActivity extends AppCompatActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
+        //int id = item.getItemId();
         //noinspection SimplifiableIfStatement
         /*if (id == R.id.action_settings) {
             return true;
         }*/
-
         return super.onOptionsItemSelected(item);
     }
 
-    /**
-     * A placeholder fragment containing a simple view.
-     */
     public static class PlaceholderFragment extends Fragment {
         private ImageCheck imageCheck = new ImageCheck();
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
         private static final String ARG_SECTION_NUMBER = "section_number";
-
         public PlaceholderFragment() {
         }
-
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
         public static PlaceholderFragment newInstance(int sectionNumber) {
             PlaceholderFragment fragment = new PlaceholderFragment();
             Bundle args = new Bundle();
@@ -183,16 +144,14 @@ public class MainActivity extends AppCompatActivity {
             fragment.setArguments(args);
             return fragment;
         }
-
+        //初始化fragment的Layout
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            Log.i("Fragment","onCreateView");
             if(getArguments().getInt(ARG_SECTION_NUMBER)==1) {
                 View rootView = inflater.inflate(R.layout.fragment_main, container, false);
                 TextView textView = (TextView) rootView.findViewById(R.id.section_label);
                 textView.setText(location1);
-                View subView = inflater.inflate(R.layout.recent_weather, container, false);
                 return rootView;
             }else if(getArguments().getInt(ARG_SECTION_NUMBER)==2){
                 View rootView = inflater.inflate(R.layout.fragment_main, container, false);
@@ -207,6 +166,7 @@ public class MainActivity extends AppCompatActivity {
                 return rootView;
             }
         }
+        //setView:將傳入的資料庫查詢set到fragment的Layout上
         private void setView(RealmResults<JSON_Data> data){
             TextView weather = (TextView) getView().findViewById(R.id.weather);
             weather.setText(getString(R.string.weather)+ data.get(0).getList().get(0).getWeather().get(0).getMain());
@@ -233,17 +193,14 @@ public class MainActivity extends AppCompatActivity {
             ImageView subImageView2 = (ImageView)getView().findViewById(R.id.imageView6);
             subImageView2.setImageResource(imageCheck.getIconName(data.get(0).getList().get(2).getWeather().get(0).getIcon()));
         }
+        //查詢資料庫並呼叫setView
         @Override
         public void onStart() {
             super.onStart();
-            Log.i("Fragment","onStart");
             if(getArguments().getInt(ARG_SECTION_NUMBER)==1) {
-                Log.i("tttttt", String.valueOf(realm.where(JSON_Data.class).findAll()));
                 RealmResults<JSON_Data> data = realm.where(JSON_Data.class).equalTo("location",location1).findAll();
-                Log.i("dataaaaaa", String.valueOf(data));
                 if (realm.where(JSON_Data.class).equalTo("location", location1).findFirst() != null) {
                     setView(data);
-
                 }
             }else if(getArguments().getInt(ARG_SECTION_NUMBER)==2){
                 RealmResults<JSON_Data> data = realm.where(JSON_Data.class).equalTo("location",location2).findAll();
@@ -259,13 +216,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-
-
-    /**
-     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
-     * one of the sections/tabs/pages.
-     */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
         public SectionsPagerAdapter(FragmentManager fm) {
@@ -303,60 +253,30 @@ public class MainActivity extends AppCompatActivity {
     private void initDataObject(String weatherLocation){
         json_data = realm.createObject(JSON_Data.class,weatherLocation);
         realmList=new RealmList<List>();
-        /*
-        //list = realm.createObject(List.class);
-        temp = realm.createObject(Temp.class);
-        weather = realm.createObject(Weather.class);
-        weatherList = new RealmList<Weather>(weather);
-        realmList=new RealmList<List>();
 
-        int j;
-        for (j=0;j<2;j++) {
-            realmList.add(j,list);
-        }
-
-
-        Log.i("realm.size", String.valueOf(realmList.size()));
-        json_data.setList(realmList);
-        Log.i("json_data.List", String.valueOf(json_data.getList()));
-        Log.i("json_data.Size", String.valueOf(json_data.getList().size()));
-        int i;
-        for (i=0;i<3;i++) {
-            json_data.getList().get(i).setTemp(temp);
-            json_data.getList().get(i).setWeather(weatherList);
-        }
-        */
         int j;
         for (j=0;j<3;j++) {
             temp = realm.createObject(Temp.class);
             weather = realm.createObject(Weather.class);
-            weatherList = new RealmList<Weather>(weather);
+            weatherList = new RealmList<>(weather);
             list = realm.createObject(List.class);
             realmList.add(j,list);
             realmList.get(j).setTemp(temp);
             realmList.get(j).setWeather(weatherList);
         }
         json_data.setList(realmList);
-        Log.i("json_data.List2", String.valueOf(json_data.getList()));
-        Log.i("json_data", String.valueOf(json_data));
-        Log.i("realmList", String.valueOf(realmList));
-        Log.i("list", String.valueOf(list));
-        Log.i("temp", String.valueOf(temp));
-        Log.i("weather", String.valueOf(weather));
-        Log.i("temp.day", String.valueOf(temp.getDay()));
     }
-
+//藉由查詢資料庫資料來判斷資料庫是否有建立該筆資料
     private boolean checkIfDataExists(String weatherLocation) {
         return realm.where(JSON_Data.class).equalTo("location", weatherLocation).findFirst() != null;
     }
     //更新realm
-    private void updateData(Response<JSON_Data> response) {
-        realm.copyToRealmOrUpdate(response.body());
+    private void updateData(Response<JSON_Data> response,String weatherLocation) {
+        JSON_Data json_data = response.body();
+        json_data.setLocation(weatherLocation);
+        realm.copyToRealmOrUpdate(json_data);
     }
     private void initPresenter() {
         presenter = new Presenterful();
     }
-
-
-
 }

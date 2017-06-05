@@ -7,7 +7,7 @@ import io.realm.annotations.PrimaryKey;
 /**
  * Created by Lancer on 2017/5/24.
  */
-
+//Realm資料庫
 public class JSON_Data extends RealmObject{
     private RealmList<List> list;
 

@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="com.example.lancer.myweather.MainActivity">
+    tools:context="com.example.lancer.myweather.View.MainActivity">
 
     <android.support.design.widget.AppBarLayout
         android:id="@+id/appbar"

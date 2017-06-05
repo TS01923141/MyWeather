@@ -1,6 +1,4 @@
-package com.example.lancer.myweather;
-
-import com.example.lancer.myweather.Model.JSON_Data;
+package com.example.lancer.myweather.Model;
 
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -14,7 +12,7 @@ import retrofit2.http.Query;
 
 
 public class MyRetrofit {
-
+    //查詢資料條件式
     public interface MyDataService{
         @GET("/data/2.5/forecast/daily")
         Call<JSON_Data> getData(@Query("q")String city, @Query("APPID")String apiKey, @Query("units")String units, @Query("cnt")String cnt);

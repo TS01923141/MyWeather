@@ -1,7 +1,6 @@
 package com.example.lancer.myweather.Presentation;
 
 import com.example.lancer.myweather.Model.JSON_Data;
-import com.example.lancer.myweather.View.MainView;
 
 import retrofit2.Response;
 
@@ -16,7 +15,4 @@ public interface Presenter {
 
     void setRealmObjectData();
 
-    void setView(MainView view);
-
-    void getRealmData();
 }
